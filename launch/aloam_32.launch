@@ -6,16 +6,16 @@
     <remap from="/velodyne_points" to="/sensor/lidar/raw/pointcloud2"/>
     <remap from="/aft_mapped_to_init_high_frec" to="/sensor/features/odom"/>
     
-    <node pkg="aloam_velodyne" type="ascanRegistration" name="aloam_scan_registeration" output="screen" />
+    <node pkg="aloam" type="ascanRegistration" name="aloam_scan_registeration" output="screen" />
 
-    <node pkg="aloam_velodyne" type="alaserOdometry" name="aloam_laser_odometry" output="screen" />
+    <node pkg="aloam" type="alaserOdometry" name="aloam_laser_odometry" output="screen" />
 
-    <node pkg="aloam_velodyne" type="alaserMapping" name="aloam_laser_mapping" output="screen" />
+    <node pkg="aloam" type="alaserMapping" name="aloam_laser_mapping" output="screen" />
 
-	<rosparam command="load" file="$(find aloam_velodyne)/params/aloam_32.yaml"/>
+	<rosparam command="load" file="$(find aloam)/params/aloam_32.yaml"/>
 
     <group if="$(arg use_rviz)">
-        <node launch-prefix="nice" pkg="rviz" type="rviz" name="rviz" args="-d $(find aloam_velodyne)/rviz_cfg/aloam_velodyne.rviz" />
+        <node launch-prefix="nice" pkg="rviz" type="rviz" name="rviz" args="-d $(find aloam)/rviz_cfg/aloam_velodyne.rviz" />
     </group>
 
 </launch>

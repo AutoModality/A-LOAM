@@ -239,6 +239,11 @@ void laserOdometryHandler(const nav_msgs::Odometry::ConstPtr &laserOdometry)
 
 	tf2::doTransform(odomAftMapped.pose.pose, odomAftMapped.pose.pose, init_tf_);
 
+	odomAftMapped.pose.covariance[0*6 + 0] = 0.05;
+	odomAftMapped.pose.covariance[1*6 + 1] = 0.05;
+	odomAftMapped.pose.covariance[2*6 + 2] = 0.05;
+	odomAftMapped.pose.covariance[5*6 + 5] = 0.05;
+
 	pubOdomAftMappedHighFrec.publish(odomAftMapped);
 }
 
