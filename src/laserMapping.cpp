@@ -50,6 +50,7 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <tf/transform_datatypes.h>
 #include <tf/transform_broadcaster.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <eigen3/Eigen/Dense>
 #include <ceres/ceres.h>
 #include <mutex>
@@ -62,6 +63,7 @@
 #include "aloam_velodyne/common.h"
 #include "aloam_velodyne/tic_toc.h"
 
+bool publish_tf_ = true;
 
 int frameCount = 0;
 
@@ -69,6 +71,15 @@ double timeLaserCloudCornerLast = 0;
 double timeLaserCloudSurfLast = 0;
 double timeLaserCloudFullRes = 0;
 double timeLaserOdometry = 0;
+double init_x_ = 0.0;
+double init_y_ = 0.0;
+double init_z_ = 0.0;
+double init_heading_ = 0.0;
+
+geometry_msgs::TransformStamped init_tf_;
+
+float lineRes = 0;
+float planeRes = 0;
 
 
 int laserCloudCenWidth = 10;
@@ -225,6 +236,9 @@ void laserOdometryHandler(const nav_msgs::Odometry::ConstPtr &laserOdometry)
 	odomAftMapped.pose.pose.position.x = t_w_curr.x();
 	odomAftMapped.pose.pose.position.y = t_w_curr.y();
 	odomAftMapped.pose.pose.position.z = t_w_curr.z();
+
+	tf2::doTransform(odomAftMapped.pose.pose, odomAftMapped.pose.pose, init_tf_);
+
 	pubOdomAftMappedHighFrec.publish(odomAftMapped);
 }
 
@@ -872,6 +886,7 @@ void process()
 			laserAfterMappedPath.poses.push_back(laserAfterMappedPose);
 			pubLaserAfterMappedPath.publish(laserAfterMappedPath);
 
+
 			static tf::TransformBroadcaster br;
 			tf::Transform transform;
 			tf::Quaternion q;
@@ -883,7 +898,10 @@ void process()
 			q.setY(q_w_curr.y());
 			q.setZ(q_w_curr.z());
 			transform.setRotation(q);
-			br.sendTransform(tf::StampedTransform(transform, odomAftMapped.header.stamp, "/camera_init", "/aft_mapped"));
+			if(publish_tf_)
+			{
+				br.sendTransform(tf::StampedTransform(transform, odomAftMapped.header.stamp, "/camera_init", "/aft_mapped"));
+			}
 
 			frameCount++;
 		}
@@ -892,16 +910,43 @@ void process()
 	}
 }
 
+void getParams()
+{
+
+	ros::param::param<float>("mapping_line_resolution", lineRes, 0.4);
+	ros::param::param<float>("mapping_plane_resolution", planeRes, 0.8);
+	ros::param::param<bool>("publish_tf", publish_tf_, true);
+	//todo: use current enu kinematic or locator init pose parameter
+	double init_heading = 0.0;
+	ros::param::param<double>("init_x", init_tf_.transform.translation.x, 0.0);
+	ros::param::param<double>("init_y", init_tf_.transform.translation.y, 0.0);
+	ros::param::param<double>("init_z", init_tf_.transform.translation.z, 0.0);
+	ros::param::param<double>("init_heading_deg", init_heading, 0.0);
+
+	ROS_INFO("Init Location: x:%f y:%f z:%f w:%f", init_tf_.transform.translation.x, init_tf_.transform.translation.y,
+				init_tf_.transform.translation.z, init_heading);
+
+	init_heading = init_heading * M_PI / 180.0;
+
+	tf::Quaternion q;
+	q.setRPY(0.0, 0.0, init_heading);
+	init_tf_.transform.rotation.x = q.x();
+	init_tf_.transform.rotation.y = q.y();
+	init_tf_.transform.rotation.z = q.z();
+	init_tf_.transform.rotation.w = q.w();
+
+
+	ROS_INFO("line resolution %f plane resolution %f", lineRes, planeRes);
+
+}
+
 int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "laserMapping");
 	ros::NodeHandle nh;
 
-	float lineRes = 0;
-	float planeRes = 0;
-	nh.param<float>("mapping_line_resolution", lineRes, 0.4);
-	nh.param<float>("mapping_plane_resolution", planeRes, 0.8);
-	printf("line resolution %f plane resolution %f \n", lineRes, planeRes);
+	getParams();
+
 	downSizeFilterCorner.setLeafSize(lineRes, lineRes,lineRes);
 	downSizeFilterSurf.setLeafSize(planeRes, planeRes, planeRes);
 
