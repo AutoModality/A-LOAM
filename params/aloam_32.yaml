@@ -1,0 +1,10 @@
+scan_line: 32
+scan_frequency: 20
+minimum_range: 1.0
+down_size_x: 0.2
+down_size_y: 0.2
+down_size_z: 0.2
+mapping_line_resolution: 0.2
+mapping_plane_resolution: 0.4
+# if 1, do mapping 10 Hz, if 2, do mapping 5 Hz. Suggest to use 1, it will adjust frequence automaticlly
+mapping_skip_frame: 1

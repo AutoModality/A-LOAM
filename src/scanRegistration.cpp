@@ -57,7 +57,6 @@ using std::atan2;
 using std::cos;
 using std::sin;
 
-const double scanPeriod = 0.1;
 
 const int systemDelay = 0; 
 int systemInitCount = 0;
@@ -67,6 +66,12 @@ float cloudCurvature[400000];
 int cloudSortInd[400000];
 int cloudNeighborPicked[400000];
 int cloudLabel[400000];
+
+double down_size_x_ = 0.2;
+double down_size_y_ = 0.2;
+double down_size_z_ = 0.2;
+double scan_period_ = 0.1;
+
 
 bool comp (int i,int j) { return (cloudCurvature[i]<cloudCurvature[j]); }
 
@@ -129,11 +134,15 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudMsg)
     std::vector<int> scanStartInd(N_SCANS, 0);
     std::vector<int> scanEndInd(N_SCANS, 0);
 
+    //convert sensor_msgs::PointCloud2 to pcl::PointXYZ
     pcl::PointCloud<pcl::PointXYZ> laserCloudIn;
     pcl::fromROSMsg(*laserCloudMsg, laserCloudIn);
-    std::vector<int> indices;
 
+    std::vector<int> indices;
+    //TODO: mix the two filter with each other
+    //remove nan
     pcl::removeNaNFromPointCloud(laserCloudIn, laserCloudIn, indices);
+    //apply high pass filter
     removeClosedPointCloud(laserCloudIn, laserCloudIn, MINIMUM_RANGE);
 
 
@@ -156,6 +165,7 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudMsg)
     bool halfPassed = false;
     int count = cloudSize;
     PointType point;
+    //extracting each ring
     std::vector<pcl::PointCloud<PointType>> laserCloudScans(N_SCANS);
     for (int i = 0; i < cloudSize; i++)
     {
@@ -163,6 +173,7 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudMsg)
         point.y = laserCloudIn.points[i].y;
         point.z = laserCloudIn.points[i].z;
 
+        //finding the pitch angle for each point
         float angle = atan(point.z / sqrt(point.x * point.x + point.y * point.y)) * 180 / M_PI;
         int scanID = 0;
 
@@ -236,7 +247,7 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudMsg)
         }
 
         float relTime = (ori - startOri) / (endOri - startOri);
-        point.intensity = scanID + scanPeriod * relTime;
+        point.intensity = scanID + scan_period_ * relTime;
         laserCloudScans[scanID].push_back(point); 
     }
     
@@ -401,7 +412,7 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudMsg)
         pcl::PointCloud<PointType> surfPointsLessFlatScanDS;
         pcl::VoxelGrid<PointType> downSizeFilter;
         downSizeFilter.setInputCloud(surfPointsLessFlatScan);
-        downSizeFilter.setLeafSize(0.2, 0.2, 0.2);
+        downSizeFilter.setLeafSize(down_size_x_, down_size_y_, down_size_z_);
         downSizeFilter.filter(surfPointsLessFlatScanDS);
 
         surfPointsLessFlat += surfPointsLessFlatScanDS;
@@ -409,38 +420,51 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudMsg)
     printf("sort q time %f \n", t_q_sort);
     printf("seperate points time %f \n", t_pts.toc());
 
+    if(pubLaserCloud.getNumSubscribers() > 0)
+    {
+        sensor_msgs::PointCloud2 laserCloudOutMsg;
+        pcl::toROSMsg(*laserCloud, laserCloudOutMsg);
+        laserCloudOutMsg.header.stamp = laserCloudMsg->header.stamp;
+        laserCloudOutMsg.header.frame_id = "/camera_init";
+        pubLaserCloud.publish(laserCloudOutMsg);
+    }
 
-    sensor_msgs::PointCloud2 laserCloudOutMsg;
-    pcl::toROSMsg(*laserCloud, laserCloudOutMsg);
-    laserCloudOutMsg.header.stamp = laserCloudMsg->header.stamp;
-    laserCloudOutMsg.header.frame_id = "/camera_init";
-    pubLaserCloud.publish(laserCloudOutMsg);
+    if(pubCornerPointsSharp.getNumSubscribers() > 0)
+    {
+    	sensor_msgs::PointCloud2 cornerPointsSharpMsg;
+    	pcl::toROSMsg(cornerPointsSharp, cornerPointsSharpMsg);
+    	cornerPointsSharpMsg.header.stamp = laserCloudMsg->header.stamp;
+    	cornerPointsSharpMsg.header.frame_id = "/camera_init";
+    	pubCornerPointsSharp.publish(cornerPointsSharpMsg);
+    }
 
-    sensor_msgs::PointCloud2 cornerPointsSharpMsg;
-    pcl::toROSMsg(cornerPointsSharp, cornerPointsSharpMsg);
-    cornerPointsSharpMsg.header.stamp = laserCloudMsg->header.stamp;
-    cornerPointsSharpMsg.header.frame_id = "/camera_init";
-    pubCornerPointsSharp.publish(cornerPointsSharpMsg);
+    if(pubCornerPointsLessSharp.getNumSubscribers() > 0)
+    {
+        sensor_msgs::PointCloud2 cornerPointsLessSharpMsg;
+        pcl::toROSMsg(cornerPointsLessSharp, cornerPointsLessSharpMsg);
+        cornerPointsLessSharpMsg.header.stamp = laserCloudMsg->header.stamp;
+        cornerPointsLessSharpMsg.header.frame_id = "/camera_init";
+        pubCornerPointsLessSharp.publish(cornerPointsLessSharpMsg);
+    }
 
-    sensor_msgs::PointCloud2 cornerPointsLessSharpMsg;
-    pcl::toROSMsg(cornerPointsLessSharp, cornerPointsLessSharpMsg);
-    cornerPointsLessSharpMsg.header.stamp = laserCloudMsg->header.stamp;
-    cornerPointsLessSharpMsg.header.frame_id = "/camera_init";
-    pubCornerPointsLessSharp.publish(cornerPointsLessSharpMsg);
+    if(pubSurfPointsFlat.getNumSubscribers() > 0)
+    {
+        sensor_msgs::PointCloud2 surfPointsFlat2;
+        pcl::toROSMsg(surfPointsFlat, surfPointsFlat2);
+        surfPointsFlat2.header.stamp = laserCloudMsg->header.stamp;
+        surfPointsFlat2.header.frame_id = "/camera_init";
+        pubSurfPointsFlat.publish(surfPointsFlat2);
+    }
 
-    sensor_msgs::PointCloud2 surfPointsFlat2;
-    pcl::toROSMsg(surfPointsFlat, surfPointsFlat2);
-    surfPointsFlat2.header.stamp = laserCloudMsg->header.stamp;
-    surfPointsFlat2.header.frame_id = "/camera_init";
-    pubSurfPointsFlat.publish(surfPointsFlat2);
-
-    sensor_msgs::PointCloud2 surfPointsLessFlat2;
-    pcl::toROSMsg(surfPointsLessFlat, surfPointsLessFlat2);
-    surfPointsLessFlat2.header.stamp = laserCloudMsg->header.stamp;
-    surfPointsLessFlat2.header.frame_id = "/camera_init";
-    pubSurfPointsLessFlat.publish(surfPointsLessFlat2);
-
-    // pub each scam
+    if(pubSurfPointsLessFlat.getNumSubscribers() > 0)
+    {
+		sensor_msgs::PointCloud2 surfPointsLessFlat2;
+		pcl::toROSMsg(surfPointsLessFlat, surfPointsLessFlat2);
+		surfPointsLessFlat2.header.stamp = laserCloudMsg->header.stamp;
+		surfPointsLessFlat2.header.frame_id = "/camera_init";
+		pubSurfPointsLessFlat.publish(surfPointsLessFlat2);
+    }
+    // pub each scan
     if(PUB_EACH_LINE)
     {
         for(int i = 0; i< N_SCANS; i++)
@@ -458,16 +482,33 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudMsg)
         ROS_WARN("scan registration process over 100ms");
 }
 
+void getParams()
+{
+	double scan_freq = 10;
+
+	ros::param::param("/scan_line", N_SCANS, 16);
+	ros::param::param("/minimum_range", MINIMUM_RANGE, 0.1);
+	ros::param::param("/down_size_x", down_size_x_, 0.2);
+	ros::param::param("/down_size_y", down_size_y_, 0.2);
+	ros::param::param("/down_size_z", down_size_z_, 0.2);
+	ros::param::param("/scan_frequency", scan_freq, 10.0);
+	scan_period_ = 1.0 / scan_freq;
+
+    ROS_INFO("%s = %d", "/scan_line", N_SCANS);
+    ROS_INFO("%s = %f", "/minimum_range", MINIMUM_RANGE);
+    ROS_INFO("%s = %f", "/down_size_x", down_size_x_);
+    ROS_INFO("%s = %f", "/down_size_y", down_size_y_);
+    ROS_INFO("%s = %f", "/down_size_z", down_size_z_);
+    ROS_INFO("%s = %f", "/scan_period", scan_period_);
+}
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "scanRegistration");
     ros::NodeHandle nh;
 
-    nh.param<int>("scan_line", N_SCANS, 16);
+    getParams();
 
-    nh.param<double>("minimum_range", MINIMUM_RANGE, 0.1);
-
-    printf("scan line number %d \n", N_SCANS);
 
     if(N_SCANS != 16 && N_SCANS != 32 && N_SCANS != 64)
     {
