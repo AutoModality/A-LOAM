@@ -2,15 +2,15 @@
 <launch>
     
     <arg name="use_rviz" default="false" />
-    
+    <arg name="log" default="log"/>    
     <remap from="/velodyne_points" to="/sensor/lidar/raw/pointcloud2"/>
     <remap from="/aft_mapped_to_init_high_frec" to="/sensor/features/odom"/>
     
-    <node pkg="aloam" type="ascanRegistration" name="aloam_scan_registeration" output="screen" />
+    <node pkg="aloam" type="ascanRegistration" name="aloam_scan_registeration" output="$(arg log)" />
 
-    <node pkg="aloam" type="alaserOdometry" name="aloam_laser_odometry" output="screen" />
+    <node pkg="aloam" type="alaserOdometry" name="aloam_laser_odometry" output="$(arg log)" />
 
-    <node pkg="aloam" type="alaserMapping" name="aloam_laser_mapping" output="screen" />
+    <node pkg="aloam" type="alaserMapping" name="aloam_laser_mapping" output="$(arg log)" />
 
 	<rosparam command="load" file="$(find aloam)/params/aloam_32.yaml"/>
 
