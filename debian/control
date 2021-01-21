@@ -8,6 +8,6 @@ Standards-Version: 3.9.2
 
 Package: ros-melodic-aloam
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ros-melodic-ceres-solver, ros-melodic-geometry-msgs, ros-melodic-image-transport, ros-melodic-nav-msgs, ros-melodic-rosbag, ros-melodic-roscpp, ros-melodic-rospy, ros-melodic-sensor-msgs, ros-melodic-std-msgs, ros-melodic-tf
+Depends: ${shlibs:Depends}, ${misc:Depends}, libatlas-base-dev, libeigen3-dev, libgflags-dev, libgoogle-glog-dev, ros-melodic-ceres-solver, ros-melodic-geometry-msgs, ros-melodic-image-transport, ros-melodic-nav-msgs, ros-melodic-rosbag, ros-melodic-roscpp, ros-melodic-rospy, ros-melodic-sensor-msgs, ros-melodic-std-msgs, ros-melodic-tf
 Description: This is an advanced implentation of LOAM.
- 
+ LOAM is described in the following paper: J. Zhang and S. Singh. LOAM: Lidar Odometry and Mapping in Real-time. Robotics: Science and Systems Conference (RSS). Berkeley, CA, July 2014.
