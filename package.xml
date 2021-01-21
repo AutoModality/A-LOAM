@@ -1,7 +1,6 @@
-<?xml version="1.0"?>
 <package>
   <name>aloam</name>
-  <version>0.0.0</version>
+  <version>1.0.0</version>
 
   <description>
     This is an advanced implentation of LOAM.
@@ -26,7 +25,11 @@
   <build_depend>sensor_msgs</build_depend>
   <build_depend>tf</build_depend>
   <build_depend>image_transport</build_depend>
-  
+  <build_depend>ceres_solver</build_depend>
+  <build_depend>libgoogle-glog-dev</build_depend>
+  <build_depend>libgflags-dev</build_depend>
+  <build_depend>atlas</build_depend>
+  <build_depend>eigen</build_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>nav_msgs</run_depend>
   <run_depend>sensor_msgs</run_depend>
@@ -36,7 +39,11 @@
   <run_depend>rosbag</run_depend>
   <run_depend>tf</run_depend>
   <run_depend>image_transport</run_depend>
-
+  <run_depend>ceres_solver</run_depend>
+  <run_depend>libgoogle-glog-dev</run_depend>
+  <run_depend>libgflags-dev</run_depend>
+  <run_depend>atlas</run_depend>
+  <run_depend>eigen</run_depend>
   <export>
   </export>
 </package>
