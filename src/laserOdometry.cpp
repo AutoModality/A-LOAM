@@ -34,6 +34,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+#include <aloam/common.h>
+#include <aloam/tic_toc.h>
 #include <cmath>
 #include <nav_msgs/Odometry.h>
 #include <nav_msgs/Path.h>
@@ -52,8 +54,6 @@
 #include <mutex>
 #include <queue>
 
-#include "aloam_velodyne/common.h"
-#include "aloam_velodyne/tic_toc.h"
 #include "lidarFactor.hpp"
 
 #define DISTORTION 0

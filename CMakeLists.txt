@@ -49,6 +49,20 @@ target_link_libraries(alaserMapping ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${CERES
 add_executable(kittiHelper src/kittiHelper.cpp)
 target_link_libraries(kittiHelper ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBS})
 
+#############
+## Install ##
+#############
+install(TARGETS ascanRegistration alaserOdometry alaserMapping
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
+install(DIRECTORY launch/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+  FILES_MATCHING PATTERN "*")
+
+
+ #Mark cpp header files for installation
+install(DIRECTORY include/aloam
+  DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION})
 
 

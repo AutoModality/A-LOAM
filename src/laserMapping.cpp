@@ -34,9 +34,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+#include <aloam/common.h>
+#include <aloam/common.h>
+#include <aloam/tic_toc.h>
 #include <math.h>
 #include <vector>
-#include <aloam_velodyne/common.h>
 #include <nav_msgs/Odometry.h>
 #include <nav_msgs/Path.h>
 #include <geometry_msgs/PoseStamped.h>
@@ -60,8 +62,6 @@
 #include <string>
 
 #include "lidarFactor.hpp"
-#include "aloam_velodyne/common.h"
-#include "aloam_velodyne/tic_toc.h"
 
 bool publish_tf_ = true;
 

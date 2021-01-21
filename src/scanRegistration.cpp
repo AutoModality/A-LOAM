@@ -35,11 +35,11 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 
+#include <aloam/common.h>
+#include <aloam/tic_toc.h>
 #include <cmath>
 #include <vector>
 #include <string>
-#include "aloam_velodyne/common.h"
-#include "aloam_velodyne/tic_toc.h"
 #include <nav_msgs/Odometry.h>
 #include <opencv2/opencv.hpp>
 #include <pcl_conversions/pcl_conversions.h>
