@@ -12,9 +12,7 @@
 
     <node pkg="aloam" type="alaserMapping" name="aloam_laser_mapping" output="$(arg log)" />
 
-    <include file="$(find am_perception)/launch/logger.launch"/>
-
-    <rosparam command="load" file="$(find aloam)/params/aloam_32.yaml"/>
+	<rosparam command="load" file="$(find aloam)/params/aloam_32.yaml"/>
 
     <group if="$(arg use_rviz)">
         <node launch-prefix="nice" pkg="rviz" type="rviz" name="rviz" args="-d $(find aloam)/rviz_cfg/aloam_velodyne.rviz" />
