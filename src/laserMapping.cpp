@@ -923,10 +923,11 @@ void getParams()
 	ros::param::param<bool>("publish_tf", publish_tf_, true);
 	//todo: use current enu kinematic or locator init pose parameter
 	double init_heading = 0.0;
-	ros::param::param<double>("init_x", init_tf_.transform.translation.x, 0.0);
-	ros::param::param<double>("init_y", init_tf_.transform.translation.y, 0.0);
-	ros::param::param<double>("init_z", init_tf_.transform.translation.z, 0.0);
-	ros::param::param<double>("init_heading_deg", init_heading, 0.0);
+	ros::param::param<double>("/locator/current_ENU/origin/X", init_tf_.transform.translation.x, 0.0);
+	ros::param::param<double>("/locator/current_ENU/origin/Y", init_tf_.transform.translation.y, 0.0);
+	ros::param::param<double>("/locator/current_ENU/origin/Z", init_tf_.transform.translation.z, 0.0);
+	ros::param::param<double>("/locator/correct_fcu_frame_heading_D", init_heading, 0.0);
+	init_heading = init_heading * M_PI / 180.0;
 
 	ROS_INFO("Init Location: x:%f y:%f z:%f w:%f", init_tf_.transform.translation.x, init_tf_.transform.translation.y,
 				init_tf_.transform.translation.z, init_heading);
